@@ -25,7 +25,12 @@ Module Program
     Private Function GetDepotManifestObject(FilePath As String) As DepotManifest
         Dim DepotManifestFlags = BindingFlags.NonPublic Or BindingFlags.Instance
         Dim DepotManifestFileBytes = File.ReadAllBytes(FilePath)
-        Dim DepotManifest = CType(Activator.CreateInstance(GetType(DepotManifest), DepotManifestFlags, Nothing, New Object() {DepotManifestFileBytes}, Globalization.CultureInfo.InvariantCulture), DepotManifest)
+        Dim DepotManifest = CType(Activator.CreateInstance(
+                                      GetType(DepotManifest),
+                                      DepotManifestFlags,
+                                      Nothing,
+                                      New Object() {DepotManifestFileBytes},
+                                      Globalization.CultureInfo.InvariantCulture), DepotManifest)
         Return DepotManifest
     End Function
 
