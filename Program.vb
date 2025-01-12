@@ -1,6 +1,5 @@
 Imports SteamKit2
 Imports System.IO
-Imports System.Reflection
 Imports System.Security.Cryptography
 Imports System.Text
 
@@ -12,7 +11,7 @@ Module Program
         If args.Length = 2 Then
             GameDepotFolder = args(0)
             GameFilesFolder = args(1)
-            HandleManifest()
+            CheckGameFiles()
         Else
             Console.WriteLine("Usage: SteamDepotCheck.exe <GameDepotFolder> <GameFilesFolder>")
             Console.WriteLine("")
@@ -22,25 +21,13 @@ Module Program
         End If
     End Sub
 
-    Private Function GetDepotManifestObject(FilePath As String) As DepotManifest
-        Dim DepotManifestFlags = BindingFlags.NonPublic Or BindingFlags.Instance
-        Dim DepotManifestFileBytes = File.ReadAllBytes(FilePath)
-        Dim DepotManifest = CType(Activator.CreateInstance(
-                                      GetType(DepotManifest),
-                                      DepotManifestFlags,
-                                      Nothing,
-                                      New Object() {DepotManifestFileBytes},
-                                      Globalization.CultureInfo.InvariantCulture), DepotManifest)
-        Return DepotManifest
-    End Function
-
-    Private Sub HandleManifest()
+    Private Sub CheckGameFiles()
         Dim DepotManifestDictionary As New Dictionary(Of String, List(Of String))
         Dim OrphanGameFilesList As New List(Of String)
         Dim UnmatchedGameFilesList As New List(Of String)
         For Each CurrentDepotManifestFilePath In Directory.GetFiles(GameDepotFolder, "*.*", SearchOption.AllDirectories)
             If CurrentDepotManifestFilePath.ToLower.EndsWith(".manifest") Then
-                Dim CurrentDepotManifest = GetDepotManifestObject(CurrentDepotManifestFilePath)
+                Dim CurrentDepotManifest = DepotManifest.LoadFromFile(CurrentDepotManifestFilePath)
                 For Each CurrentFileFromCurrentDepotManifest As DepotManifest.FileData In CurrentDepotManifest.Files
                     Dim FileName = CurrentFileFromCurrentDepotManifest.FileName.Replace("\", "/")
                     Dim FileHash = CurrentFileFromCurrentDepotManifest.FileHash.Aggregate(New StringBuilder(), Function(sb, v) sb.Append(v.ToString("x2"))).ToString().ToUpper()
